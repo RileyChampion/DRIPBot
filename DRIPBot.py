@@ -4,6 +4,9 @@ from discord.utils import get
 from Config import Config as config
 import requests
 from bs4 import BeautifulSoup
+import time
+import asyncio
+from test import scrap_site
 
 headers = requests.utils.default_headers()
 headers.update({
@@ -11,39 +14,45 @@ headers.update({
 })
 
 bot = commands.Bot(command_prefix="!")
-client = discord.Client()
 
-@client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
-
-# @client.event
-# async def on_message(message):
-#     # if message.author == client.user:
-#     #     return
-
-#     if message.content.startswith('$hello'):
-#         await message.channel.send('Hello!')
+currency = "€£₽$¥"
+size = ['XS', 'S','M','L','XL','XXL']
 
 # @bot.event
-# async def on_message(message):
-#     print(message.author)
-#     # if message.author == bot:
-#     #     print('here')
-#     #     await message.add_reaction(":white_check_mark:")
+# async def on_ready():
+#     print('We have logged in as {0.user}'.format(client))
+
+@bot.command(name='drip_help')
+async def drip_help(ctx):
+    await ctx.send("```!drip {url to website} {price = optional} {size = optional}```")
 
 @bot.command(name='drip')
-async def drip(ctx):
-    embedVar = discord.Embed(title="Title", description="Desc", color=0x00ff00)
-    embedVar.add_field(name="Field1", value="hi", inline=False)
-    embedVar.add_field(name="Field2", value="hi2", inline=False)
-    # msg = await say(embed=embedVar)
-    # await msg.add_reaction(msg, ":white_check_mark:")
-    msg = await ctx.send(embed=embedVar)
-    # emoji1 = get(ctx.server.emojis, name="")
-    await msg.add_reaction("789818259787612170")
-    await msg.add_reaction('\N{smirking face}')
+async def drip(ctx, url="", price="", size=""):
+    if(url == ""):
+        await ctx.send("```!drip {url to website} {price = optional} {size = optional}```")
+    else:
+        item_tuple = await scrap_site(url)
 
-# bot.add_command(fucuuck)
+        embedVar = discord.Embed(title=f"♨️SOME NEW HEAT IN THE CHAT♨️", description=f"**DRIP FROM:** {ctx.author.mention}", color=0xF6EB07)
+        embedVar.set_image(url=f"{item_tuple[1]}")
+        embedVar.add_field(name="Item", value=f"{item_tuple[0]}\n{'Price: **{}**'.format(price) if price != '' else ''}\n{'Size: **{}**'.format(size) if size != '' else ''}", inline=True)
+        msg = await ctx.send(embed=embedVar)
+
+        await msg.add_reaction('🔥')
+        await msg.add_reaction('🤮')
+
+        await asyncio.sleep(10)
+        
+        count_reactions = await ctx.channel.fetch_message(msg.id)
+
+        max_reaction_text = ("🔥YO! That's fire cop it!🔥" if count_reactions.reactions[0].count >= count_reactions.reactions[1].count else "🤮Nah wtf is that shit?🤮")
+
+        if(max_reaction_text == "🔥YO! That's fire cop it!🔥"):
+            embedVar.color=0xF67407
+        else:
+            embedVar.color=0x439C3D
+
+        embedVar.set_footer(text=max_reaction_text)
+        await msg.edit(embed=embedVar)
 
 bot.run(config.DISCORD_TOKEN)
