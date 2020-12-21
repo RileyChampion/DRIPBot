@@ -1,12 +1,15 @@
 import discord
 from discord.ext import commands
 from discord.utils import get
-from Config import Config as config
+# from Config import Config as config
 import requests
 from bs4 import BeautifulSoup
 import time
 import asyncio
 from test import scrap_site
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 headers = requests.utils.default_headers()
 headers.update({
@@ -55,4 +58,4 @@ async def drip(ctx, url="", price="", size=""):
         embedVar.set_footer(text=max_reaction_text)
         await msg.edit(embed=embedVar)
 
-bot.run(config.DISCORD_TOKEN)
+bot.run(os.getenv('DISCORD_TOKEN'))
